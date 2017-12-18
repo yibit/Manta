@@ -1,0 +1,179 @@
+#!/bin/sh
+
+usage()
+{
+    echo "Usage:                        "
+	echo "        $0 <go project name>  "
+	echo "                              "
+
+	return 0
+}
+
+if test $# -ne 1; then
+    usage
+	exit 1
+fi
+
+NAME=$1
+
+if test -d $GOPATH/src/$NAME; then
+    echo "Warnning: $GOPATH/src/$NAME already exists !!"
+	exit 1
+fi
+
+mkdir -p $GOPATH/src/$NAME/{$NAME,tools}
+
+cd $GOPATH/src/$NAME
+
+touch README.md VERSION
+
+cat > .gitignore <<EOF
+dist
+dep-status.png
+.DS_Store
+*~
+
+EOF
+
+
+cat > Makefile <<EOF
+VERSION    := \$(shell cat ./VERSION)
+IMAGE_NAME := manta
+
+dep := \$(GOPATH)/bin/dep
+
+all: usage 
+
+usage:
+	@echo "Usage:                                              "
+	@echo "                                                    "
+	@echo "    make  command                                   "
+	@echo "                                                    "
+	@echo "The commands are:                                   "
+	@echo "                                                    "
+	@echo "    build       compile packages and dependencies   "
+	@echo "    run         start the runner                    "
+	@echo "    tests       run go test                         "
+	@echo "    clean       remove object files                 "
+	@echo "    fmt         run gofmt on package sources        "
+	@echo "    docker      build the docker images             "
+	@echo "    dep         run dep ensure                      "
+	@echo "    update      run dep ensure -update              "
+	@echo "    status      run dep status                      "
+	@echo "    release     release a version                   "
+	@echo "                                                    "
+
+
+build:
+	go install -v
+	go build manta
+
+run: build
+	\$(GOPATH)/bin/manta
+
+fmt:
+	cd manta && go fmt
+
+tests:
+	cd manta && go test -v
+
+prepare:
+	go get -u github.com/golang/dep
+	go get -u github.com/goreleaser/goreleaser
+
+dep:
+	\$(dep) ensure
+
+update:
+	\$(dep) ensure -update
+
+status:
+	\$(dep) status -dot | dot -T png -o dep-status.png
+
+docker:
+	docker build -f Dockerfile -t manta-\$(VERSION) .
+
+release:
+	git tag -a \$(VERSION) -m "Release: \$(VERSION)" || true
+	git push origin \$(VERSION)
+	goreleaser --rm-dist
+
+.PHONE: clean release fmt docker tests
+
+clean:
+	rm -f \$(GOPATH)/bin/manta
+	find . -name \*~ -type f |xargs -I {} rm -f {}
+
+EOF
+
+
+cat > Dockerfile <<EOF
+FROM golang:alpine as base
+
+RUN set -ex \
+	&& apk add --no-cache --virtual .fetch-deps \
+	make
+
+COPY . /go/src/manta
+
+WORKDIR /go/src/manta
+
+RUN set -ex \
+    && export GOPATH=/go \
+    && make build
+
+FROM busybox
+
+COPY --from=base /go/bin/manta /usr/local/bin/manta
+
+EXPOSE 8080
+
+ENTRYPOINT [ "manta" ]
+
+EOF
+
+
+cat > LICENSE <<EOF
+// Copyright (c) 2013-2017 The manta Authors. All rights reserved.
+//
+// Permission to use, copy, modify, and distribute this software and
+// its documentation for any purpose and without fee is hereby
+// granted, provided that the above copyright notice appear in all
+// copies and that both the copyright notice and this permission
+// notice and warranty disclaimer appear in supporting
+// documentation, and that the name of Lucent Technologies or any of
+// its entities not be used in advertising or publicity pertaining
+// to distribution of the software without specific, written prior
+// permission.
+
+// LUCENT TECHNOLOGIES DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS
+// SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND
+// FITNESS.  IN NO EVENT SHALL LUCENT OR ANY OF ITS ENTITIES BE
+// LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY
+// DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
+// WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS
+// ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+// PERFORMANCE OF THIS SOFTWARE.
+
+EOF
+
+cat > AUTHORS <<EOF
+# This is the official list of yana authors for copyright purposes.
+# This file is distinct from the CONTRIBUTORS files.
+# See the latter for an explanation.
+
+GuiQuan Zhang <guiqzhang at gmail.com>
+
+EOF
+
+
+$GOPATH/bin/dep init
+
+UNAME=`uname -s`
+
+if test "x$UNAME" == "xDarwin"; then
+    find . -type f |xargs grep -l manta |xargs -I {} sed -i '' "s/manta/$NAME/g" {}
+else
+    find . -type f |xargs grep -l manta |xargs -I {} sed -i "s/manta/$NAME/g" {}
+fi
+
