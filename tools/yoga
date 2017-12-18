@@ -37,7 +37,7 @@ EOF
 
 
 cat > Makefile <<EOF
-VERSION    := \$(shell cat ./VERSION)
+VERSION    := \$(shell cat ./VERSION |head -1)
 IMAGE_NAME := manta
 
 dep := \$(GOPATH)/bin/dep
@@ -66,7 +66,7 @@ usage:
 
 build:
 	go install -v
-	go build manta
+	go build -o \$(GOPATH)/bin/manta 
 
 run: build
 	\$(GOPATH)/bin/manta
@@ -132,6 +132,44 @@ ENTRYPOINT [ "manta" ]
 
 EOF
 
+cat > main.go <<EOF
+package main
+
+import fmt "fmt"
+import manta "manta/manta"
+
+func main() {
+	manta.Manta()
+
+	fmt.Printf("Hello world!\n")
+}
+
+EOF
+
+
+cat > $NAME/$NAME.go <<EOF
+package manta
+
+import fmt "fmt"
+
+// Manta ...
+func Manta() {
+
+	fmt.Printf("Hello, from Manta!\n")
+
+}
+
+EOF
+
+
+cat > .dockerignore <<EOF
+.vscode
+.DS_Store
+*.bak
+*~
+
+EOF
+
 
 cat > LICENSE <<EOF
 // Copyright (c) 2013-2017 The manta Authors. All rights reserved.
@@ -176,4 +214,7 @@ if test "x$UNAME" == "xDarwin"; then
 else
     find . -type f |xargs grep -l manta |xargs -I {} sed -i "s/manta/$NAME/g" {}
 fi
+
+
+git init
 
