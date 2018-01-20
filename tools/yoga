@@ -204,8 +204,17 @@ GuiQuan Zhang <guiqzhang at gmail.com>
 
 EOF
 
-
 $GOPATH/bin/dep init
+
+cat > vendor/.gitignore <<EOF
+!*
+
+EOF
+
+cat > tools/.gitignore <<EOF
+!*
+
+EOF
 
 UNAME=`uname -s`
 
