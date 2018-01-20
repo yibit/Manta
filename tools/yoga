@@ -93,6 +93,12 @@ status:
 docker:
 	docker build -f Dockerfile -t manta-\$(VERSION) .
 
+compose:
+	docker-compose up
+
+compose-stop:
+	docker-compose stop
+
 release:
 	git tag -a \$(VERSION) -m "Release: \$(VERSION)" || true
 	git push origin \$(VERSION)
@@ -131,6 +137,23 @@ EXPOSE 8080
 ENTRYPOINT [ "manta" ]
 
 EOF
+
+
+cat > docker-compose.yml <<EOF
+manta:
+  build: .
+  dockerfile: Dockerfile
+#  image: manta
+  restart: always
+  ports:
+    - 8080:8080
+  #environment:
+  #  -
+  #volumes:
+  #  -
+
+EOF
+
 
 cat > main.go <<EOF
 package main
@@ -172,7 +195,7 @@ EOF
 
 
 cat > LICENSE <<EOF
-// Copyright (c) 2013-2017 The manta Authors. All rights reserved.
+// Copyright (c) 2013-2018 The manta Authors. All rights reserved.
 //
 // Permission to use, copy, modify, and distribute this software and
 // its documentation for any purpose and without fee is hereby
