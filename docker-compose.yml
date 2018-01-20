@@ -1,0 +1,11 @@
+manta:
+  build: .
+  dockerfile: Dockerfile
+#  image: manta
+  restart: always
+  ports:
+    - 8080:8080
+  #environment:
+  #  -
+  #volumes:
+  #  -

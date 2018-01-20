@@ -54,6 +54,12 @@ status:
 docker:
 	docker build -f Dockerfile -t manta-$(VERSION) .
 
+compose:
+	docker-compose up
+
+compose-stop:
+	docker-compose stop
+
 release:
 	git tag -a $(VERSION) -m "Release: $(VERSION)" || true
 	git push origin $(VERSION)
