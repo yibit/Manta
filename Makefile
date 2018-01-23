@@ -1,4 +1,4 @@
-VERSION    := $(shell cat ./VERSION |head -1)
+VERSION    := $(shell cat ./VERSION |awk 'NR==1 { print $1; }')
 IMAGE_NAME := manta
 
 dep := $(GOPATH)/bin/dep
