@@ -21,7 +21,7 @@ if test -d $GOPATH/src/$NAME; then
 	exit 1
 fi
 
-mkdir -p $GOPATH/src/$NAME/{$NAME,tools}
+mkdir -p $GOPATH/src/$NAME/{$NAME,tools,.vscode}
 
 cd $GOPATH/src/$NAME
 
@@ -37,7 +37,7 @@ EOF
 
 
 cat > Makefile <<EOF
-VERSION    := $(shell cat ./VERSION |awk 'NR==1 { print $1; }')
+VERSION    := \$(shell cat ./VERSION |awk 'NR==1 { print \$1; }')
 IMAGE_NAME := manta
 
 dep := \$(GOPATH)/bin/dep
@@ -117,8 +117,8 @@ cat > Dockerfile <<EOF
 FROM golang:alpine as base
 
 RUN set -ex \
-	&& apk add --no-cache --virtual .fetch-deps \
-	make
+    && apk add --no-cache --virtual .fetch-deps \
+    make
 
 COPY . /go/src/manta
 
@@ -186,7 +186,6 @@ EOF
 
 
 cat > .dockerignore <<EOF
-.vscode
 .DS_Store
 *.bak
 *~
@@ -236,6 +235,21 @@ EOF
 
 cat > tools/.gitignore <<EOF
 !*
+
+EOF
+
+cat > .vscode/settings.json <<EOF
+{
+    "files.associations": {
+        "*.h": "cpp",
+        "*.c": "c",
+        "*.cc": "cpp",
+        "*.sh": "shellscript",
+        "*.lua": "lua",
+        "*.go": "go" 
+    },
+    "files.encoding": "utf8"
+}
 
 EOF
 

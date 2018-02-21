@@ -1,5 +1,5 @@
 dist
 dep-status.png
-.vscode
+.vscode/database.json
 .DS_Store
 *~

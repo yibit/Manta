@@ -1,8 +1,8 @@
 FROM golang:alpine as base
 
 RUN set -ex \
-	&& apk add --no-cache --virtual .fetch-deps \
-	make
+    && apk add --no-cache --virtual .fetch-deps \
+    make
 
 COPY . /go/src/manta
 
