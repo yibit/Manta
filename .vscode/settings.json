@@ -1,0 +1,11 @@
+{
+    "files.associations": {
+        "*.h": "cpp",
+        "*.c": "c",
+        "*.cc": "cpp",
+        "*.sh": "shellscript",
+        "*.lua": "lua",
+        "*.go": "go" 
+    },
+    "files.encoding": "utf8"
+}
