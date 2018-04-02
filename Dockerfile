@@ -4,6 +4,8 @@ RUN set -ex \
     && apk add --no-cache --virtual .fetch-deps \
     make
 
+RUN mkdir -p /go/{src,bin,pkg}
+
 COPY . /go/src/manta
 
 WORKDIR /go/src/manta
@@ -19,4 +21,3 @@ COPY --from=base /go/bin/manta /usr/local/bin/manta
 EXPOSE 8080 
 
 ENTRYPOINT [ "manta" ]
-

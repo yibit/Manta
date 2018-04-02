@@ -33,7 +33,10 @@ run: build
 	$(GOPATH)/bin/manta
 
 fmt:
-	cd manta && go fmt
+	find . -name "*.go" |xargs -I {} go fmt {}
+
+evt:
+	go tool vet .
 
 tests:
 	cd manta && go test -v
